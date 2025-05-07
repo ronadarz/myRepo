@@ -1,0 +1,39 @@
+# File: .github/workflows/ci.yml
+name: Build & Test Cowsay SI
+
+on:
+  push:
+    branches:
+      - test
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1) Grab your code
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # 2) Build the Docker image
+      - name: Build Docker image
+        run: |
+          docker build \
+            --tag cowsay-si:ci \
+            --file ./Dockerfile \
+            .
+
+      # 3) Run the image with a test message
+      - name: Smoke-test cowsay
+        run: |
+          docker run --rm cowsay-si:ci "Hello from GitHub Actions!" \
+            | tee output.txt
+
+      # 4) (Optional) Assert the output contains the message
+      - name: Verify output
+        run: |
+          grep -q "Hello from GitHub Actions!" output.txt
+
+      # 5) Cleanup (remove the image to free space)
+      - name: Remove image
+        run: docker image rm cowsay-si:ci
