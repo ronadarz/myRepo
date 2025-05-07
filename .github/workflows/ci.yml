@@ -1,42 +1,32 @@
-
-# File: .github/workflows/ci.yml
-name: Build & Test Cowsay SI
-
 on:
   push:
     branches:
-      - test
-      - main
-  workflow_dispatch:
-
-jobs:
-  build-and-test:
+      - test      # ← only trigger on pushes to “test”
+  workflow_dispatch:  # optional: lets you run it manually on test
+  
+  publish:
+    name: Publish Docker Image
     runs-on: ubuntu-latest
+    needs: build-and-test
 
     steps:
-      # 1) Grab your code
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # 2) Build the Docker image
-      - name: Build Docker image
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Tag image
         run: |
-          docker build \
-            --tag cowsay-si:ci \
-            --file ./Dockerfile \
-            .
+          docker tag cowsay-si:ci \
+            ${{ secrets.DOCKERHUB_USERNAME }}/cowsay-si:latest
 
-      # 3) Run the image with a test message
-      - name: Smoke-test cowsay
+      - name: Push to Docker Hub
         run: |
-          docker run --rm cowsay-si:ci "Hello from GitHub Actions!" \
-            | tee output.txt
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/cowsay-si:latest
 
-      # 4) (Optional) Assert the output contains the message
-      - name: Verify output
+      - name: Pull & verify
         run: |
-          grep -q "Hello from GitHub Actions!" output.txt
-
-      # 5) Cleanup (remove the image to free space)
-      - name: Remove image
-        run: docker image rm cowsay-si:ci
+          docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cowsay-si:latest
