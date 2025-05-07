@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - test
-  workflow_dispatch:
+workflow_dispatch:
 
 jobs:
   build-and-test:
@@ -56,24 +56,24 @@ jobs:
           --file ./Dockerfile \
           .
    
-      - name: Checkout repo
-        uses: actions/checkout@v4
+    - name: Checkout repo
+      uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Tag image
-        run: |
+    - name: Tag image
+      run: |
           docker tag cowsay-si:ci \
             ${{ secrets.DOCKERHUB_USERNAME }}/cowsay-si:latest
 
-      - name: Push to Docker Hub
-        run: |
+    - name: Push to Docker Hub
+      run: |
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/cowsay-si:latest
 
-      - name: Pull & verify
-        run: |
+    - name: Pull & verify
+      run: |
           docker pull ${{ secrets.DOCKERHUB_USERNAME }}/cowsay-si:latest
