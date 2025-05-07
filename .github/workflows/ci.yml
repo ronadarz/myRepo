@@ -26,17 +26,32 @@ jobs:
             --file ./Dockerfile \
             .
 
-      # 3) Run the image with a test message
-      - name: Smoke-test cowsay
+   # 3) Start the container in the background
+      - name: Start container
+        id: start
         run: |
-          docker run --rm cowsay-si:ci "Hello from GitHub Actions!" \
-            | tee output.txt
+          CONTAINER_ID=$(docker run -d -p 8080:8080 cowsay-si:ci 8080)
+          echo "::set-output name=id::$CONTAINER_ID"
 
-      # 4) (Optional) Assert the output contains the message
-      - name: Verify output
+      # 4) Wait for it to boot
+      - name: Wait for server
+        run: sleep 5
+
+      # 5) Hit the endpoint and save the response
+      - name: Smoke-test endpoint
         run: |
-          grep -q "Hello from GitHub Actions!" output.txt
+          curl -s http://localhost:8080/Hello%20from%20GitHub%20Actions! > response.txt
 
-      # 5) Cleanup (remove the image to free space)
-      - name: Remove image
-        run: docker image rm cowsay-si:ci
+      # 6) Stop the container
+      - name: Stop container
+        run: docker kill ${{ steps.start.outputs.id }}
+
+      # 7) Validate the response contains our message
+      - name: Validate output
+        run: |
+          if grep -q "Hello from GitHub Actions!" response.txt; then
+            echo "✅ Smoke test passed!"
+          else
+            echo "❌ Smoke test failed!"
+            exit 1
+          fi
