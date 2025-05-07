@@ -1,9 +1,19 @@
+# .github/workflows/ci.yml
+name: Cowsay SI CI
+
 on:
   push:
     branches:
-      - test      # ← only trigger on pushes to “test”
-  workflow_dispatch:  # optional: lets you run it manually on test
-  
+      - test
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      # … your build-and-test steps …
+
   publish:
     name: Publish Docker Image
     runs-on: ubuntu-latest
