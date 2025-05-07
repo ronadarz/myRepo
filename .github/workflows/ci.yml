@@ -47,8 +47,15 @@ jobs:
     name: Publish Docker Image
     runs-on: ubuntu-latest
     needs: build-and-test
-
-    steps:
+    
+  steps:
+    - name: Build Docker image (again)
+      run: |
+        docker build \
+          --tag cowsay-si:ci \
+          --file ./Dockerfile \
+          .
+   
       - name: Checkout repo
         uses: actions/checkout@v4
 
