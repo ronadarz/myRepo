@@ -43,10 +43,16 @@ jobs:
         run: |
           grep -q "Hello from GitHub Actions!" response.txt
 
-publish:
-  name: Publish Docker Image
-  runs-on: ubuntu-latest
-  needs: build-and-test
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest          
+
+  publish:
+    name: Publish Docker Image
+    runs-on: ubuntu-latest
+    needs: build-and-test
 
   steps:
     # 1) Checkout code so Dockerfile and all sources exist
